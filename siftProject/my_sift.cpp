@@ -16,7 +16,7 @@ void MySift::createBaseImg(const cv::Mat &image, cv::Mat &BaseImg)
 	else {
 		image.clone();
 	}
-	cv::Mat float_image, temp_image;//float_imageÎªÁËÖ®ºóµÄ¸ßË¹
+	cv::Mat float_image, temp_image;//float_imageä¸ºäº†ä¹‹åçš„é«˜æ–¯
 	gray_image.convertTo(float_image, CV_32FC1, 1.0 / 255.0);
 	cv::resize(float_image, temp_image, cv::Size(2 * float_image.cols, 2 * float_image.rows), 0, 0, cv::INTER_LINEAR);
 	double sigma_diff = sqrt(sigma*sigma - 2 * INIT_SIGMA * 2 * INIT_SIGMA);
@@ -25,7 +25,7 @@ void MySift::createBaseImg(const cv::Mat &image, cv::Mat &BaseImg)
 }
 void MySift::buildGaussianPyramid(const cv::Mat &BaseImg, std::vector<std::vector<cv::Mat>> &pyr, int nOctaves)
 {
-	//²úÉú¸ßË¹ÂË²¨ºË
+	//äº§ç”Ÿé«˜æ–¯æ»¤æ³¢æ ¸
 	std::vector<double>sigmas;
 	sigmas.push_back(sigma);
 	double k = pow(2.0, 1.0 / nOctaveLayers);
@@ -41,16 +41,16 @@ void MySift::buildGaussianPyramid(const cv::Mat &BaseImg, std::vector<std::vecto
 		std::cout << sigmas[i] << std::endl;
 	}
 	//------------------------------------------------------------//
-	pyr.resize(nOctaves, std::vector<cv::Mat>(nOctaveLayers + 3));//Íâ²ã¡¢ÄÚ²ã
-		//Èç¹ûÖ¸¶¨Íâ²ãºÍÄÚ²ãÏòÁ¿µÄ´óĞ¡£¬¾Í¿ÉÓÃoperator[]½øĞĞ¶ÁºÍĞ´£»
-		//Èç¹ûÖ»Ö¸¶¨Íâ²ãÏòÁ¿´óĞ¡£¬¾ÍÄÜÓÃpush_back()º¯Êı½øĞĞĞ´£¬²»ÄÜÓÃoperator[]½øĞĞ¶ÁºÍĞ´¡£
+	pyr.resize(nOctaves, std::vector<cv::Mat>(nOctaveLayers + 3));//å¤–å±‚ã€å†…å±‚
+		//å¦‚æœæŒ‡å®šå¤–å±‚å’Œå†…å±‚å‘é‡çš„å¤§å°ï¼Œå°±å¯ç”¨operator[]è¿›è¡Œè¯»å’Œå†™ï¼›
+		//å¦‚æœåªæŒ‡å®šå¤–å±‚å‘é‡å¤§å°ï¼Œå°±èƒ½ç”¨push_back()å‡½æ•°è¿›è¡Œå†™ï¼Œä¸èƒ½ç”¨operator[]è¿›è¡Œè¯»å’Œå†™ã€‚
 	for (int i = 0; i < nOctaves; i++)
 	{
 		for (int j = 0; j < nOctaveLayers + 3; j++)
 		{
-			if (i == 0 && j == 0)//µÚÒ»×éµÚÒ»²ã
+			if (i == 0 && j == 0)//ç¬¬ä¸€ç»„ç¬¬ä¸€å±‚
 				pyr[i][j] = BaseImg;
-			else if (j == 0) {//·ÇµÚÒ»×éµÚÒ»²ã
+			else if (j == 0) {//éç¬¬ä¸€ç»„ç¬¬ä¸€å±‚
 				resize(pyr[i - 1][nOctaveLayers], pyr[i][0], cv::Size(pyr[i - 1][nOctaveLayers].cols / 2,
 					pyr[i - 1][nOctaveLayers].rows / 2), 0, 0, cv::INTER_LINEAR);
 
@@ -89,18 +89,18 @@ void MySift::buildDoGPyramid(const std::vector<std::vector<cv::Mat>> &pyr, std::
 		}
 	}
 }
-static bool isExtremum(std::vector<std::vector<cv::Mat>> &dogpyr, int o, int l, int r, int c,float threshold)//¼«Öµµã³õ²½¼ì²â£¬ËÑË÷ÉÏÏÂÈı²ãµÄ²î·Ö½ğ×ÖËş
+static bool isExtremum(std::vector<std::vector<cv::Mat>> &dogpyr, int o, int l, int r, int c,float threshold)//æå€¼ç‚¹åˆæ­¥æ£€æµ‹ï¼Œæœç´¢ä¸Šä¸‹ä¸‰å±‚çš„å·®åˆ†é‡‘å­—å¡”
 {
 	float val = dogpyr[o][l].ptr<float>(r)[c];
 	if (abs(val) > threshold)
 	{
 		if (val > 0)
 		{
-			for (int i = -1; i <= 1; i++)//²ã
+			for (int i = -1; i <= 1; i++)//å±‚
 			{
-				for (int j = -1; j <= 1; j++)//ĞĞ
+				for (int j = -1; j <= 1; j++)//è¡Œ
 				{
-					for (int k = -1; k <= 1; k++)//ÁĞ
+					for (int k = -1; k <= 1; k++)//åˆ—
 					{
 						if (val < dogpyr[o][l + i].ptr<float>(r + j)[c + k])
 							return false;
@@ -110,11 +110,11 @@ static bool isExtremum(std::vector<std::vector<cv::Mat>> &dogpyr, int o, int l, 
 		}
 		else
 		{
-			for (int i = -1; i <= 1; i++)//²ã
+			for (int i = -1; i <= 1; i++)//å±‚
 			{
-				for (int j = -1; j <= 1; j++)//ĞĞ
+				for (int j = -1; j <= 1; j++)//è¡Œ
 				{
-					for (int k = -1; k <= 1; k++)//ÁĞ
+					for (int k = -1; k <= 1; k++)//åˆ—
 					{
 						if (val > dogpyr[o][l + i].ptr<float>(r + j)[c + k])
 							return false;
@@ -127,20 +127,20 @@ static bool isExtremum(std::vector<std::vector<cv::Mat>> &dogpyr, int o, int l, 
 	return false;
 }
 /*
-×ÓÏñËØ²åÖµ£¬ÇúÏßÄâºÏ£¬ÀûÓÃÒÑÖªµÄÀëÉ¢¿Õ¼äµÄµã²åÖµµÃµ½Á¬Ğø¿Õ¼äµÄ¼«Öµµã
-ÕâÀïÒòÎªÈ¡Öµ¦ÒÊÇÀëÉ¢µÄÎªÁËÄ£Äâ¾àÀëÔ¶½ü±ä»¯£¬ËùÒÔĞèÒª¶ÔÁ¬ĞøµÄ¿Õ¼äÕÒµ½¼«Öµµã
-@dogpyr:¸ßË¹²î·Ö½ğ×ÖËş
-@kpt:¹Ø¼üµã
+å­åƒç´ æ’å€¼ï¼Œæ›²çº¿æ‹Ÿåˆï¼Œåˆ©ç”¨å·²çŸ¥çš„ç¦»æ•£ç©ºé—´çš„ç‚¹æ’å€¼å¾—åˆ°è¿ç»­ç©ºé—´çš„æå€¼ç‚¹
+è¿™é‡Œå› ä¸ºå–å€¼Ïƒæ˜¯ç¦»æ•£çš„ä¸ºäº†æ¨¡æ‹Ÿè·ç¦»è¿œè¿‘å˜åŒ–ï¼Œæ‰€ä»¥éœ€è¦å¯¹è¿ç»­çš„ç©ºé—´æ‰¾åˆ°æå€¼ç‚¹
+@dogpyr:é«˜æ–¯å·®åˆ†é‡‘å­—å¡”
+@kpt:å…³é”®ç‚¹
 ------------------------
-ÔÚÖ®Ç°³õ²½Ñ°ÕÒ¼«ÖµµÃµ½µÄ¼«ÖµµãËùÔÚµÄ×é¡¢²ã¡¢ĞĞ¡¢ÁĞ
-@octave:×é
-@layer:²ã
-@row:ĞĞ
-@col:ÁĞ
+åœ¨ä¹‹å‰åˆæ­¥å¯»æ‰¾æå€¼å¾—åˆ°çš„æå€¼ç‚¹æ‰€åœ¨çš„ç»„ã€å±‚ã€è¡Œã€åˆ—
+@octave:ç»„
+@layer:å±‚
+@row:è¡Œ
+@col:åˆ—
 ------------------------
-@contrastThreshold:¶Ô±ÈãĞÖµ0.04
-@edgeThreshold:±ßÔµãĞÖµ10
-@sigma:¸ßË¹³ß¶È¿Õ¼ä×îµ×²ãÍ¼Ïñ³ß¶È1.6
+@contrastThreshold:å¯¹æ¯”é˜ˆå€¼0.04
+@edgeThreshold:è¾¹ç¼˜é˜ˆå€¼10
+@sigma:é«˜æ–¯å°ºåº¦ç©ºé—´æœ€åº•å±‚å›¾åƒå°ºåº¦1.6
 */
 static bool adjustLocExtermum(const std::vector<std::vector<cv::Mat>> &dogpyr,
 	cv::KeyPoint &kpt, int octave, int &layer, int &row, int &col, int nOctaveLayers,
@@ -148,23 +148,23 @@ static bool adjustLocExtermum(const std::vector<std::vector<cv::Mat>> &dogpyr,
 {
 	float xr, xc, xl;
 	int num = 0;
-	for (; num < MAX_INTERP_STEPS; num++)//×î´óµü´ú´ÎÊı
+	for (; num < MAX_INTERP_STEPS; num++)//æœ€å¤§è¿­ä»£æ¬¡æ•°
 	{
 		cv::Mat img = dogpyr[octave][layer];
 		cv::Mat pre = dogpyr[octave][layer - 1];
 		cv::Mat nex = dogpyr[octave][layer + 1];
 
-		//ÓĞÏŞ²î·ÖÇóµ¼x,y,¦Ò·½ÏòÒ»½×Æ«µ¼
+		//æœ‰é™å·®åˆ†æ±‚å¯¼x,y,Ïƒæ–¹å‘ä¸€é˜¶åå¯¼
 		float dx = (img.ptr<float>(row)[col + 1] - img.ptr<float>(row)[col - 1]) / 2.0;
 		float dy = (img.ptr<float>(row + 1)[col] - img.ptr<float>(row - 1)[col]) / 2.0;
 		float dz = (nex.ptr<float>(row)[col] - pre.ptr<float>(row)[col]) / 2.0;
-		//¶ş½×Æ«µ¼
+		//äºŒé˜¶åå¯¼
 		float val = img.ptr<float>(row)[col];
 		float dxx = (img.ptr<float>(row)[col + 1] + img.ptr<float>(row)[col - 1]) - 2 * val;
 		float dyy = (img.ptr<float>(row + 1)[col] + img.ptr<float>(row - 1)[col]) - 2 * val;
 		float dzz = (nex.ptr<float>(row)[col] + pre.ptr<float>(row)[col]) - 2 * val;
 
-		//»ìºÏ¶ş½×Æ«µ¼
+		//æ··åˆäºŒé˜¶åå¯¼
 		float dxy = ((img.ptr<float>(row + 1)[col + 1] + img.ptr<float>(row - 1)[col - 1]) -
 			(img.ptr<float>(row + 1)[col - 1] + img.ptr<float>(row - 1)[col + 1])) / 4.0;
 
@@ -174,32 +174,32 @@ static bool adjustLocExtermum(const std::vector<std::vector<cv::Mat>> &dogpyr,
 		float dyz = ((nex.ptr<float>(row + 1)[col] + pre.ptr<float>(row - 1)[col]) -
 			(nex.ptr<float>(row - 1)[col] + pre.ptr<float>(row + 1)[col])) / 4.0;
 
-		cv::Matx33f H(dx, dy, dz,
+		cv::Matx33f H(dxx, dxy, dxz,
 			dxy, dyy, dyz,
 			dxz, dyz, dzz);
 		cv::Vec3f dD(dx, dy, dz);
 
 		cv::Vec3f X_;
-		cv::solve(H, dD, X_, cv::DECOMP_LU);//Çó½âÏßĞÔ·½³Ì×éµÄ½â
+		cv::solve(H, dD, X_, cv::DECOMP_LU);//æ±‚è§£çº¿æ€§æ–¹ç¨‹ç»„çš„è§£
 		//cv::Vec3f X_ = (H.inv()*dD);
-		xc = -X_[0];//x·½ÏòÆ«ÒÆÁ¿
-		xr = -X_[1];//y·½ÏòÆ«ÒÆÁ¿
-		xl = -X_[2];//¦Ò·½ÏòÆ«ÒÆÁ¿
+		xc = -X_[0];//xæ–¹å‘åç§»é‡
+		xr = -X_[1];//yæ–¹å‘åç§»é‡
+		xl = -X_[2];//Ïƒæ–¹å‘åç§»é‡
 
-		if (abs(xc) < 0.5f && abs(xr) < 0.5f && abs(xl) < 0.5f)//Æ«ÒÆĞ¡ÓÚ0.5£¬¼«ÖµµãÕıÈ·
+		if (abs(xc) < 0.5f && abs(xr) < 0.5f && abs(xl) < 0.5f)//åç§»å°äº0.5ï¼Œæå€¼ç‚¹æ­£ç¡®
 			break;
 		col = col + cvRound(xc);
 		row = row + cvRound(xr);
 		layer = layer + cvRound(xl);
 
 		if (layer<1 || layer>nOctaveLayers || col<IMG_BORDER || col>img.cols - IMG_BORDER
-			|| row<IMG_BORDER || row>img.rows - IMG_BORDER)//¹Ø¼üµãÔÚ±ß½çÇøÓòÉ¾³ı
-			return false;//±íÊ¾¼«ÖµµãÔ½½ç
+			|| row<IMG_BORDER || row>img.rows - IMG_BORDER)//å…³é”®ç‚¹åœ¨è¾¹ç•ŒåŒºåŸŸåˆ é™¤
+			return false;//è¡¨ç¤ºæå€¼ç‚¹è¶Šç•Œ
 	}
-	if (num >= MAX_INTERP_STEPS)//´óÓÚµü´ú´ÎÊıÉ¾³ı
+	if (num >= MAX_INTERP_STEPS)//å¤§äºè¿­ä»£æ¬¡æ•°åˆ é™¤
 		return false;
-	//------------------------ÉáÆúµÍ¶Ô±È¶ÈµãÒ²¾ÍÊÇ¼«ÖµĞ¡ÓÚCONTR_THR / nOctaveLayers; CONTR_THR=0.04
-	//ĞèÒªÖØĞÂ¼ÆËãµ÷ÕûºóµÄ
+	//------------------------èˆå¼ƒä½å¯¹æ¯”åº¦ç‚¹ä¹Ÿå°±æ˜¯æå€¼å°äºCONTR_THR / nOctaveLayers; CONTR_THR=0.04
+	//éœ€è¦é‡æ–°è®¡ç®—è°ƒæ•´åçš„
 	cv::Mat image = dogpyr[octave][layer];
 	cv::Mat prev = dogpyr[octave][layer - 1];
 	cv::Mat next = dogpyr[octave][layer + 1];
@@ -212,9 +212,9 @@ static bool adjustLocExtermum(const std::vector<std::vector<cv::Mat>> &dogpyr,
 	float t = dD.dot(cv::Matx31f(xc, xr, xl));
 	float value = image.ptr<float>(row)[col] + t * 0.5;
 	if (abs(value) < CONTR_THR / nOctaveLayers)
-		return false;//È¥³ıµÍ¶Ô±È¶ÈµÄµã
-	//------------------È¥³ı±ßÔµÏìÓ¦µã---------------
-	float val = image.ptr<float>(row)[col];//Çóhessian¾ØÕóĞĞÁĞÊ½ÖµºÍ¼£
+		return false;//å»é™¤ä½å¯¹æ¯”åº¦çš„ç‚¹
+	//------------------å»é™¤è¾¹ç¼˜å“åº”ç‚¹---------------
+	float val = image.ptr<float>(row)[col];//æ±‚hessiançŸ©é˜µè¡Œåˆ—å¼å€¼å’Œè¿¹
 	float dxx = (image.ptr<float>(row)[col + 1] + image.ptr<float>(row)[col - 1]) - 2 * val;
 	float dyy = (image.ptr<float>(row + 1)[col] + image.ptr<float>(row - 1)[col]) - 2 * val;
 	float dxy = ((image.ptr<float>(row + 1)[col + 1] + image.ptr<float>(row - 1)[col - 1]) -
@@ -223,19 +223,19 @@ static bool adjustLocExtermum(const std::vector<std::vector<cv::Mat>> &dogpyr,
 	float trace = dxx + dyy;
 	if (det < 0 || (trace * trace*edgeThreshold >= det * (edgeThreshold + 1)*(edgeThreshold + 1)))
 		return false;
-	//Í¨¹ı¶Ô±È¶È¼ì²éºÍ±ßÔµÏìÓ¦£¬·µ»Økeypoint
+	//é€šè¿‡å¯¹æ¯”åº¦æ£€æŸ¥å’Œè¾¹ç¼˜å“åº”ï¼Œè¿”å›keypoint
 	//kpt.pt = cv::Point2f((float)(col + xc)*powf(2.0, octave)), ((float)row + xr)*powf(2.0, octave)));
-	kpt.pt.x = ((float)col + xc)*(1 << octave);//*powf(2.0, octave);//×îµ×²ãÍ¼Ïñx×ø±ê
-	kpt.pt.y = ((float)row + xr)*(1 << octave);//*powf(2.0, octave);//y×ø±ê
-	kpt.octave = octave + (layer << 8);//×éºÅ±£´æÔÚµÍ×Ö½Ú£¬²ãºÅ±£´æÔÚ¸ß×Ö½Úlayer<<8==layer*2^8
+	kpt.pt.x = ((float)col + xc)*(1 << octave);//*powf(2.0, octave);//æœ€åº•å±‚å›¾åƒxåæ ‡
+	kpt.pt.y = ((float)row + xr)*(1 << octave);//*powf(2.0, octave);//yåæ ‡
+	kpt.octave = octave + (layer << 8);//ç»„å·ä¿å­˜åœ¨ä½å­—èŠ‚ï¼Œå±‚å·ä¿å­˜åœ¨é«˜å­—èŠ‚layer<<8==layer*2^8
 	kpt.size = sigma * powf(2.f, (layer + xl) / nOctaveLayers)*(1 << octave);//*powf(2.0, octave);
 	kpt.response = abs(value);
 	return true;
 }
-static double* calculateHist(cv::Mat pyrImg,cv::Point pt,int radius,float sigma)//¼ÆËãÌİ¶ÈÖ±·½Í¼
+static double* calculateHist(cv::Mat pyrImg,cv::Point pt,int radius,float sigma)//è®¡ç®—æ¢¯åº¦ç›´æ–¹å›¾
 {
 	double *hist = new double[ORI_HIST_BINS];
-	//Ã¿´ÎÇå³ıÊı¾İ
+	//æ¯æ¬¡æ¸…é™¤æ•°æ®
 	for (int k = 0; k < ORI_HIST_BINS; k++)
 	{
 		hist[k] = 0.f;
@@ -254,9 +254,9 @@ static double* calculateHist(cv::Mat pyrImg,cv::Point pt,int radius,float sigma)
 				float dx = pyrImg.ptr<float>(y)[x + 1] - pyrImg.ptr<float>(y)[x - 1];
 				float dy = pyrImg.ptr<float>(y + 1)[x] - pyrImg.ptr<float>(y - 1)[x];
 				mag = sqrt(dx*dx + dy * dy);
-				ori = cv::fastAtan2(dy, dx);//·µ»ØµÄÊÇ½Ç¶È£¬ÔÚ0-360¶ÈÖ®¼ä
+				ori = cv::fastAtan2(dy, dx);//è¿”å›çš„æ˜¯è§’åº¦ï¼Œåœ¨0-360åº¦ä¹‹é—´
 				weight = exp((i*i + j * j)*exp_scale);
-				bin = cvRound(ORI_HIST_BINS / 360.f*ori);//Ô¼ÊøÔÚ0-36Ö®¼ä
+				bin = cvRound(ORI_HIST_BINS / 360.f*ori);//çº¦æŸåœ¨0-36ä¹‹é—´
 				bin = bin < ORI_HIST_BINS ? bin : 0;
 				hist[bin] += weight * mag;
 			}
@@ -279,21 +279,21 @@ static double DominantDirection(double *hist, int n,int &maxi)
 	}
 	return maxd;
 }
-//¹Ø¼üµã·½Ïò·ÖÅä
+//å…³é”®ç‚¹æ–¹å‘åˆ†é…
 static void computeKeypointsOrientations(cv::Mat pyrImg,std::vector<cv::KeyPoint> &keypoints,cv::KeyPoint &keypoint,int octave,cv::Point pt)
 {
 	double *hist = new double[ORI_HIST_BINS];
-	////Ã¿´ÎÇå³ıÊı¾İ
+	////æ¯æ¬¡æ¸…é™¤æ•°æ®
 	//for (int k = 0; k < ORI_HIST_BINS; k++)
 	//{
 	//	hist[k] = 0.f;
 	//}
 	float scale = keypoint.size/powf(2.0, octave);
-	float sigma = ORI_SIG_FCTR * scale;//ÌØÕ÷µãÁÚÓò¸ßË¹È¨ÖØ±ê×¼²î(1.5*scale)
-	int radius = cvRound(ORI_RADIUS*scale);//3*1.5*¦Ò
+	float sigma = ORI_SIG_FCTR * scale;//ç‰¹å¾ç‚¹é‚»åŸŸé«˜æ–¯æƒé‡æ ‡å‡†å·®(1.5*scale)
+	int radius = cvRound(ORI_RADIUS*scale);//3*1.5*Ïƒ
 	int len = (2 * radius + 1)*(2 * radius + 1);
-	//±éÀúÌİ¶È·½ÏòÖ±·½Í¼
-	/*-----------------1.¼ÆËãÌİ¶ÈÖ±·½Í¼----------------------*/
+	//éå†æ¢¯åº¦æ–¹å‘ç›´æ–¹å›¾
+	/*-----------------1.è®¡ç®—æ¢¯åº¦ç›´æ–¹å›¾----------------------*/
 	hist = calculateHist(pyrImg, pt, radius, sigma);
 	/*for (int i = 0; i < ORI_HIST_BINS; i++)
 	{
@@ -301,7 +301,7 @@ static void computeKeypointsOrientations(cv::Mat pyrImg,std::vector<cv::KeyPoint
 	}
 	std::cout << "---------------" << std::endl;*/
 	//---------------------------------------------------------
-	//2.Æ½»¬Ö±·½Í¼
+	//2.å¹³æ»‘ç›´æ–¹å›¾
 	double *shist = new double[ORI_HIST_BINS];
 	for (int i = 0; i < ORI_HIST_BINS; i++)
 	{
@@ -312,14 +312,14 @@ static void computeKeypointsOrientations(cv::Mat pyrImg,std::vector<cv::KeyPoint
 		std::cout << shist[i] << " " ;
 	}
 	std::cout <<"---------------"<< std::endl;*/
-	//3.È·¶¨¹Ø¼üµãÖ÷·½Ïò
-	int maxi;//Ö÷·½ÏòµÄ×î´óÖµµÄË÷Òı
-	double maxhist = DominantDirection(shist, ORI_HIST_BINS,maxi);//»ñµÃÆ½»¬ºóµÄÖ±·½Í¼µÄÖ÷·½ÏòµÄ×î´óÖµ
+	//3.ç¡®å®šå…³é”®ç‚¹ä¸»æ–¹å‘
+	int maxi;//ä¸»æ–¹å‘çš„æœ€å¤§å€¼çš„ç´¢å¼•
+	double maxhist = DominantDirection(shist, ORI_HIST_BINS,maxi);//è·å¾—å¹³æ»‘åçš„ç›´æ–¹å›¾çš„ä¸»æ–¹å‘çš„æœ€å¤§å€¼
 	//keypoint.angle = 360.f / ORI_HIST_BINS * maxi;
 	//keypoints.push_back(keypoint);
-	/*4.·½ÏòÖ±·½Í¼µÄ·åÖµÔò´ú±íÁË¸ÃÌØÕ÷µãµÄ·½Ïò£¬ÒÔÖ±·½Í¼ÖĞµÄ×î´óÖµ×÷Îª¸Ã¹Ø¼üµãµÄÖ÷·½Ïò¡£ÎªÁËÔöÇ¿Æ¥ÅäµÄÂ³°ôĞÔ£¬Ö»±£Áô·åÖµ´óÓÚÖ÷
-	·½Ïò·åÖµ80%µÄ·½Ïò×÷Îª¸Ä¹Ø¼üµãµÄ¸¨·½Ïò¡£Òò´Ë£¬¶ÔÓÚÍ¬Ò»Ìİ¶ÈÖµµÃ¶à¸ö·åÖµµÄ¹Ø¼üµãÎ»ÖÃ£¬ÔÚÏàÍ¬Î»ÖÃºÍ³ß¶È½«»áÓĞ¶à¸ö¹Ø¼üµã±»
-	´´½¨µ«·½Ïò²»Í¬¡£½öÓĞ15%µÄ¹Ø¼üµã±»¸³Óè¶à¸ö·½Ïò£¬µ«ÊÇ¿ÉÒÔÃ÷ÏÔµÄÌá¸ß¹Ø¼üµãµÄÎÈ¶¨ĞÔ*/
+	/*4.æ–¹å‘ç›´æ–¹å›¾çš„å³°å€¼åˆ™ä»£è¡¨äº†è¯¥ç‰¹å¾ç‚¹çš„æ–¹å‘ï¼Œä»¥ç›´æ–¹å›¾ä¸­çš„æœ€å¤§å€¼ä½œä¸ºè¯¥å…³é”®ç‚¹çš„ä¸»æ–¹å‘ã€‚ä¸ºäº†å¢å¼ºåŒ¹é…çš„é²æ£’æ€§ï¼Œåªä¿ç•™å³°å€¼å¤§äºä¸»
+	æ–¹å‘å³°å€¼80%çš„æ–¹å‘ä½œä¸ºæ”¹å…³é”®ç‚¹çš„è¾…æ–¹å‘ã€‚å› æ­¤ï¼Œå¯¹äºåŒä¸€æ¢¯åº¦å€¼å¾—å¤šä¸ªå³°å€¼çš„å…³é”®ç‚¹ä½ç½®ï¼Œåœ¨ç›¸åŒä½ç½®å’Œå°ºåº¦å°†ä¼šæœ‰å¤šä¸ªå…³é”®ç‚¹è¢«
+	åˆ›å»ºä½†æ–¹å‘ä¸åŒã€‚ä»…æœ‰15%çš„å…³é”®ç‚¹è¢«èµ‹äºˆå¤šä¸ªæ–¹å‘ï¼Œä½†æ˜¯å¯ä»¥æ˜æ˜¾çš„æé«˜å…³é”®ç‚¹çš„ç¨³å®šæ€§*/
 	double sec_maxhist = ORI_PEAK_RATIO * maxhist;
 	for (int i = 0; i < ORI_HIST_BINS; i++)
 	{
@@ -335,7 +335,7 @@ static void computeKeypointsOrientations(cv::Mat pyrImg,std::vector<cv::KeyPoint
 				bin = bin - ORI_HIST_BINS;
 			//cv::KeyPoint newkeypoint;
 			//newkeypoint = keypoint;
-			keypoint.angle = 360.f / ORI_HIST_BINS * bin;//ÌØÕ÷µã¸¨·½Ïò
+			keypoint.angle = 360.f / ORI_HIST_BINS * bin;//ç‰¹å¾ç‚¹è¾…æ–¹å‘
 			keypoints.push_back(keypoint);
 		}
 	}
@@ -360,11 +360,11 @@ void MySift::findScaleSpaceExtremum(std::vector<std::vector<cv::Mat>> &pyr, std:
 				for (int c = IMG_BORDER; c < num_col - IMG_BORDER; c++)
 				{
 					int octave = i, layer = j, row = r, col = c;
-					if (isExtremum(dogpyr, octave, layer, row, col, threshold))//26¸öÇøÓòÕÒÀëÉ¢¿Õ¼ä¼«Öµµã
+					if (isExtremum(dogpyr, octave, layer, row, col, threshold))//26ä¸ªåŒºåŸŸæ‰¾ç¦»æ•£ç©ºé—´æå€¼ç‚¹
 					{
 						if (adjustLocExtermum(dogpyr, keypoint, octave, layer, row, col, nOctaveLayers, contrastThreshold, edgeThreshold, sigma))
 						{
-							//µ½ÕâÀïµÄËùÓĞµã¶¼ÊÇ¹Ø¼üµã£¬½ÓÏÂÀ´ÊÇÈ·¶¨¹Ø¼üµã·½Ïò//
+							//åˆ°è¿™é‡Œçš„æ‰€æœ‰ç‚¹éƒ½æ˜¯å…³é”®ç‚¹ï¼Œæ¥ä¸‹æ¥æ˜¯ç¡®å®šå…³é”®ç‚¹æ–¹å‘//
 							computeKeypointsOrientations(pyr[octave][layer],keypoints,keypoint, octave, cv::Point(col,row));
 							//keypoints.push_back(keypoint);
 							//std::cout << layer << std::endl;
